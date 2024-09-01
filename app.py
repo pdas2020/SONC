@@ -67,38 +67,26 @@ if uploaded_file is not None:
     # Adding a total column
     pivot_table["Total"] = pivot_table.sum(axis=1)
 
-
-# Sidebar - Job Category Selection
+    # Sidebar - Job Category Selection
     job_category_choices = list(job_categories.keys()) + ['Standard']  # Including 'Standard' for uncategorized jobs
     selected_job_category = st.sidebar.multiselect('Select Job Category', job_category_choices, default=job_category_choices)
-
-    # Filtering data by job category
-    if selected_job_category:
-        filtered_data = pivot_table.loc[pivot_table.index.get_level_values('Job Category').isin(selected_job_category)]
-    else:
-        filtered_data = pivot_table  # If no specific selection, show all
-
-    # Display the filtered data
-    st.subheader("Filtered Table by Job Category")
-    st.dataframe(filtered_data)
-
-# Sidebar - T-shirt Size selection
-    st.subheader("Filtered Table by T-Shirt size")
+    
+    # Sidebar - T-shirt Size selection
     selected_size = st.sidebar.multiselect('Select T-Shirt size to filter by', size_order, default=size_order)
-    if selected_size:
-        filtered_data = pivot_table[pivot_table.columns.intersection(selected_size + ["Total"])]
-        st.dataframe(filtered_data)
 
- # Sidebar - Job Location selection
+    # Sidebar - Job Location selection
     job_locations = df['Job Location'].unique()
     selected_job_locations = st.sidebar.multiselect('Job Location', job_locations, default=job_locations)
 
-    # Filtering data by selected job locations
-    df_filtered = df[df['Job Location'].isin(selected_job_locations)]
+    # Apply all filters to the pivot table
+    filtered_data = pivot_table.loc[
+        pivot_table.index.get_level_values('Job Category').isin(selected_job_category) &
+        pivot_table.index.get_level_values('Job Location').isin(selected_job_locations)
+    ][selected_size + ['Total']]
 
-    # Displaying filtered data
-    st.subheader("Filtered Table by Job Location")
-    st.dataframe(df_filtered)       
+    # Display the filtered data
+    st.subheader("Filtered Table")
+    st.dataframe(filtered_data)
 
 else:
     st.write("Waiting on file upload...")
